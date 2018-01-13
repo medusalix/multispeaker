@@ -1,0 +1,8 @@
+language: go
+go:
+  - 1.9.x
+  - stable
+
+before_install:
+  - sudo apt-get -qq update
+  - sudo apt-get install -y libasound2-dev
