@@ -30,14 +30,14 @@ When launched, multispeaker can be interactively controlled through a number of 
 
 ## Building
 
-multispeaker can be downloaded via the following command:
+You can download multispeaker via the following command:
 
 ```
 go get github.com/Medusalix/multispeaker
 ```
 
 You can create an executable by using `go build`.
-If you want to set a default address for the client, you can use the `-X` linker parameter:
+If you want to set a default address for the client, you can use the `-X` linker flag:
 
 ```
 go build -ldflags "-X main.defaultClientAddr=192.168.178.1"
