@@ -37,6 +37,8 @@ func main() {
 		cli.HideConsole()
 	}
 
+	cli.Writeln("multispeaker v1.0.1 ©Severin v. W.\n")
+
 	logLevel := flag.String("log", "info", "Desired log level")
 	controlPort := flag.Int("control-port", defaultControlPort, "Port for the control connection")
 	streamPort := flag.Int("stream-port", defaultStreamPort, "Port for the stream connection")
