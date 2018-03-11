@@ -31,6 +31,7 @@ var mutex sync.Mutex
 var prompt string
 
 var commands = map[string]func(*network.Server, ...string){
+	"help": help,
 	"list": listUsers,
 	"play": playMusic,
 	"stop": stopMusic,
@@ -96,6 +97,18 @@ func HandleCommands(server *network.Server) {
 
 		command(server, args...)
 	}
+}
+
+func help(server *network.Server, args ...string) {
+	Writeln(
+		"Commands:\n\n" +
+			"list: Prints a list of all currently connected users.\n" +
+			"play <file>: Starts playback of a specified MP3 file.\n" +
+			"stop: Stops the music playback.\n" +
+			"vol <user|all> <volume>: Sets the system volume of a users's computer.\n" +
+			"If all is supplied, the volume of all connected users is changed.\n" +
+			"exit: Exits the program.",
+	)
 }
 
 func listUsers(server *network.Server, args ...string) {
