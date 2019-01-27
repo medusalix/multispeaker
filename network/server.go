@@ -19,10 +19,11 @@ package network
 import (
 	"errors"
 	"fmt"
-	"github.com/medusalix/multispeaker/audio"
-	"github.com/medusalix/multispeaker/log"
 	"net"
 	"sync"
+
+	"github.com/medusalix/multispeaker/audio"
+	"github.com/medusalix/multispeaker/log"
 )
 
 type Server struct {

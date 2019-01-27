@@ -17,10 +17,11 @@
 package audio
 
 import (
-	"github.com/hajimehoshi/go-mp3"
-	"github.com/medusalix/multispeaker/log"
 	"io"
 	"os"
+
+	mp3 "github.com/hajimehoshi/go-mp3"
+	"github.com/medusalix/multispeaker/log"
 )
 
 const musicBufferSize = 512

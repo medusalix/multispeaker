@@ -19,12 +19,13 @@ package cli
 import (
 	"bufio"
 	"fmt"
-	"github.com/medusalix/multispeaker/network"
 	"io"
 	"os"
 	"strconv"
 	"strings"
 	"sync"
+
+	"github.com/medusalix/multispeaker/network"
 )
 
 var mutex sync.Mutex

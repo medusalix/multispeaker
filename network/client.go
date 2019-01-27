@@ -17,9 +17,6 @@
 package network
 
 import (
-	"github.com/itchyny/volume-go"
-	"github.com/medusalix/multispeaker/audio"
-	"github.com/medusalix/multispeaker/log"
 	"io"
 	"net"
 	"os/user"
@@ -27,6 +24,10 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	volume "github.com/itchyny/volume-go"
+	"github.com/medusalix/multispeaker/audio"
+	"github.com/medusalix/multispeaker/log"
 )
 
 const reconnectDelay = time.Second * 2
@@ -178,9 +179,9 @@ func getUsername() (string, error) {
 		domainIndex := strings.IndexByte(name, '\\')
 
 		return name[domainIndex+1:], nil
-	} else {
-		return name, nil
 	}
+
+	return name, nil
 }
 
 func (c *Client) updatePlayer(sampleRate int) error {
@@ -190,11 +191,11 @@ func (c *Client) updatePlayer(sampleRate int) error {
 		log.Info("Preparing player with sample rate ", sampleRate)
 
 		return c.player.Prepare(sampleRate)
-	} else {
-		log.Info("Stopping player")
-
-		return nil
 	}
+
+	log.Info("Stopping player")
+
+	return nil
 }
 
 func (c *Client) updateVolume(vol int) error {

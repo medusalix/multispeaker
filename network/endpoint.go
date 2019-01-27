@@ -18,8 +18,9 @@ package network
 
 import (
 	"errors"
-	"github.com/medusalix/multispeaker/log"
 	"net"
+
+	"github.com/medusalix/multispeaker/log"
 )
 
 type Endpoint struct {
@@ -59,9 +60,9 @@ func (e *Endpoint) EnableStreaming(streamConn net.Conn) bool {
 		go e.sendStream()
 
 		return true
-	} else {
-		return false
 	}
+
+	return false
 }
 
 func (e *Endpoint) PreparePlayback(sampleRate int) error {
