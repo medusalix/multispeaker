@@ -16,4 +16,4 @@
 
 package cli
 
-func HideConsole() {}
+func HideConsole(showMessage bool) {}

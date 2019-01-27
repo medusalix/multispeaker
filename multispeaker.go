@@ -18,11 +18,12 @@ package main
 
 import (
 	"flag"
+	"net"
+	"os"
+
 	"github.com/medusalix/multispeaker/cli"
 	"github.com/medusalix/multispeaker/log"
 	"github.com/medusalix/multispeaker/network"
-	"net"
-	"os"
 )
 
 const defaultControlPort = 12345
@@ -32,14 +33,8 @@ const defaultStreamPort = 12346
 var defaultClientAddr string
 
 func main() {
-	// Hide if default address is specified
-	if defaultClientAddr != "" && len(os.Args) == 1 {
-		cli.HideConsole()
-	}
-
-	cli.Writeln("multispeaker v1.0.1 ©Severin v. W.\n")
-
 	logLevel := flag.String("log", "info", "Desired log level")
+	hide := flag.Bool("hide", false, "Hide the console")
 	controlPort := flag.Int("control-port", defaultControlPort, "Port for the control connection")
 	streamPort := flag.Int("stream-port", defaultStreamPort, "Port for the stream connection")
 	server := flag.Bool("server", false, "Start as server")
@@ -48,6 +43,16 @@ func main() {
 	flag.Parse()
 
 	log.Init(cli.Writef, *logLevel)
+
+	// Hide if default address is specified or flag is set
+	if defaultClientAddr != "" && len(os.Args) == 1 {
+		cli.HideConsole(true)
+	} else if *hide {
+		cli.HideConsole(false)
+	}
+
+	cli.Writeln("multispeaker v1.0.1 ©Severin v. W.")
+	cli.Writeln()
 
 	controlAddr := &net.TCPAddr{Port: *controlPort}
 	streamAddr := &net.TCPAddr{Port: *streamPort}

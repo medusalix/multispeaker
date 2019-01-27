@@ -16,17 +16,17 @@ You can configure these ports by adding `-control-port <port>` or `-stream-port 
 The logging level can be set through the `-log <level>` flag.
 
 A default address for the client to connect to can be specified. See section [Building](#building).
-When used, the console window is hidden if no arguments are given (*only on Windows*).
+When used, the console window is hidden if no arguments are given or forced by specifying the `-hide` flag (*only on Windows*).
 
 When launched, multispeaker can be interactively controlled through a number of commands:
 
-| Command                  | Description                                                                                                       |
-|--------------------------|-------------------------------------------------------------------------------------------------------------------|
-| list                     | Prints a list of all currently connected users.                                                                   |
-| play \<file>              | Starts playback of a specified MP3 file.                                                                          |
-| stop                     | Stops the music playback.                                                                                         |
-| vol <user\|all> \<volume> | Sets the system volume of a users's computer. If `all` is supplied, the volume of all connected users is changed. |
-| exit                     | Exits the program.                                                                                                |
+| Command                   | Description                                                                                                        |
+|---------------------------|--------------------------------------------------------------------------------------------------------------------|
+| list                      | Prints a list of all currently connected users.                                                                    |
+| play \<file>              | Starts playback of a specified MP3 file.                                                                           |
+| stop                      | Stops the music playback.                                                                                          |
+| vol <user\|all> \<volume> | Sets the system volume of a users's computer. If `all` is supplied, the volume of all connected users is changed.  |
+| exit                      | Exits the program.                                                                                                 |
 
 ## Building
 

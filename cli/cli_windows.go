@@ -22,7 +22,7 @@ import (
 	"unsafe"
 )
 
-func HideConsole() {
+func HideConsole(showMessage bool) {
 	if runtime.GOOS != "windows" {
 		return
 	}
@@ -41,11 +41,13 @@ func HideConsole() {
 	text, _ := syscall.UTF16PtrFromString("Multispeaker is now running in the background!")
 	caption, _ := syscall.UTF16PtrFromString("multispeaker")
 
-	// Call MessageBoxW with MB_ICONINFORMATION (0x40)
-	messageBox.Call(
-		0,
-		uintptr(unsafe.Pointer(text)),
-		uintptr(unsafe.Pointer(caption)),
-		0x40,
-	)
+	if showMessage {
+		// Call MessageBoxW with MB_ICONINFORMATION (0x40)
+		messageBox.Call(
+			0,
+			uintptr(unsafe.Pointer(text)),
+			uintptr(unsafe.Pointer(caption)),
+			0x40,
+		)
+	}
 }
