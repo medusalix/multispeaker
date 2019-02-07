@@ -24,26 +24,21 @@ import (
 )
 
 type Endpoint struct {
-	Ip   net.IP
-	Name string
-
-	control *Protocol
-	stream  *Protocol
-
+	Ip         net.IP
+	Name       string
+	control    *Protocol
+	stream     *Protocol
 	sampleRate int
 	samples    chan []byte
-
 	disconnect chan *Endpoint
 	close      chan bool
 }
 
 func NewEndpoint(conn net.Conn, disconnect chan *Endpoint) *Endpoint {
 	endpoint := &Endpoint{
-		Ip: conn.RemoteAddr().(*net.TCPAddr).IP,
-
-		control: NewProtocol(conn),
-		samples: make(chan []byte),
-
+		Ip:         conn.RemoteAddr().(*net.TCPAddr).IP,
+		control:    NewProtocol(conn),
+		samples:    make(chan []byte),
 		disconnect: disconnect,
 		close:      make(chan bool),
 	}

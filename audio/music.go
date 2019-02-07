@@ -63,6 +63,10 @@ func (m *Music) Play() {
 	go m.readSamples()
 }
 
+func (m *Music) Stop() {
+	m.stop <- true
+}
+
 func (m *Music) readSamples() {
 	for {
 		select {
@@ -96,8 +100,4 @@ func (m *Music) readSamples() {
 			m.Samples <- samples
 		}
 	}
-}
-
-func (m *Music) Stop() {
-	m.stop <- true
 }

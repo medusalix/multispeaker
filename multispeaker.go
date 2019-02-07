@@ -26,8 +26,10 @@ import (
 	"github.com/medusalix/multispeaker/network"
 )
 
-const defaultControlPort = 12345
-const defaultStreamPort = 12346
+const (
+	defaultControlPort = 12345
+	defaultStreamPort  = 12346
+)
 
 // Can be specified using linker flag "-X"
 var defaultClientAddr string
@@ -51,7 +53,7 @@ func main() {
 		cli.HideConsole(false)
 	}
 
-	cli.Writeln("multispeaker v1.0.1 ©Severin v. W.")
+	cli.Writeln("multispeaker v1.0.2 ©Severin v. W.")
 	cli.Writeln()
 
 	controlAddr := &net.TCPAddr{Port: *controlPort}

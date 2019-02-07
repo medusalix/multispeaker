@@ -60,43 +60,6 @@ type ControlPacket struct {
 	Volume uint8
 }
 
-func (p *AnnouncePacket) encode(buffer []byte) {
-	copy(buffer, p.Name)
-}
-
-func (p *PreparePacket) encode(buffer []byte) {
-	buffer[0] = byte(p.SampleRate >> 8)
-	buffer[1] = byte(p.SampleRate)
-}
-
-func (p *ControlPacket) encode(buffer []byte) {
-	buffer[0] = p.Volume
-}
-
-func (p *AnnouncePacket) decode(buffer []byte) {
-	p.Name = buffer
-}
-
-func (p *PreparePacket) decode(buffer []byte) {
-	p.SampleRate = uint16(buffer[0])<<8 | uint16(buffer[1])
-}
-
-func (p *ControlPacket) decode(buffer []byte) {
-	p.Volume = buffer[0]
-}
-
-func (p *AnnouncePacket) size() int {
-	return len(p.Name)
-}
-
-func (p *PreparePacket) size() int {
-	return 2
-}
-
-func (p *ControlPacket) size() int {
-	return 1
-}
-
 func NewProtocol(conn net.Conn) *Protocol {
 	return &Protocol{
 		conn:          conn,
@@ -185,4 +148,41 @@ func (p *Protocol) ReceiveRaw() ([]byte, error) {
 	n, err := p.conn.Read(p.receiveBuffer)
 
 	return p.receiveBuffer[:n], err
+}
+
+func (p *AnnouncePacket) encode(buffer []byte) {
+	copy(buffer, p.Name)
+}
+
+func (p *PreparePacket) encode(buffer []byte) {
+	buffer[0] = byte(p.SampleRate >> 8)
+	buffer[1] = byte(p.SampleRate)
+}
+
+func (p *ControlPacket) encode(buffer []byte) {
+	buffer[0] = p.Volume
+}
+
+func (p *AnnouncePacket) decode(buffer []byte) {
+	p.Name = buffer
+}
+
+func (p *PreparePacket) decode(buffer []byte) {
+	p.SampleRate = uint16(buffer[0])<<8 | uint16(buffer[1])
+}
+
+func (p *ControlPacket) decode(buffer []byte) {
+	p.Volume = buffer[0]
+}
+
+func (p *AnnouncePacket) size() int {
+	return len(p.Name)
+}
+
+func (p *PreparePacket) size() int {
+	return 2
+}
+
+func (p *ControlPacket) size() int {
+	return 1
 }
