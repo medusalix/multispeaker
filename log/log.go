@@ -30,16 +30,19 @@ const (
 	err
 )
 
+type writeLog func(format string, params ...interface{})
+
 var levels = []string{
 	"DEBUG",
 	"INFO",
 	"ERROR",
 }
 
-var logWriter func(format string, params ...interface{})
+var logWriter writeLog
 var logLevel int
 
-func Init(writer func(format string, params ...interface{}), level string) {
+// Init initializes the log writer and level
+func Init(writer writeLog, level string) {
 	logWriter = writer
 
 	for i, levelName := range levels {
@@ -51,26 +54,32 @@ func Init(writer func(format string, params ...interface{}), level string) {
 	}
 }
 
+// Debug writes with level 'DEBUG'
 func Debug(params ...interface{}) {
 	log(debug, fmt.Sprint(params...))
 }
 
+// Debugf formats the parameters and writes with level 'DEBUG'
 func Debugf(format string, params ...interface{}) {
 	log(debug, fmt.Sprintf(format, params...))
 }
 
+// Info writes with level 'INFO'
 func Info(params ...interface{}) {
 	log(info, fmt.Sprint(params...))
 }
 
+// Infof formats the parameters and writes with level 'INFO'
 func Infof(format string, params ...interface{}) {
 	log(info, fmt.Sprintf(format, params...))
 }
 
+// Error writes with level 'ERROR'
 func Error(params ...interface{}) {
 	log(err, fmt.Sprint(params...))
 }
 
+// Errorf formats the parameters and writes with level 'ERROR'
 func Errorf(format string, params ...interface{}) {
 	log(err, fmt.Sprintf(format, params...))
 }
@@ -90,5 +99,5 @@ func log(level int, message string) {
 	file = strings.TrimSuffix(file, filepath.Ext(file))
 	fullPath := dir + "/" + file
 
-	logWriter("%s %-5s %s - %s\n", date, levelText, fullPath, message)
+	logWriter("%s %-5s %s - %s", date, levelText, fullPath, message)
 }

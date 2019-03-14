@@ -28,9 +28,10 @@ import (
 	"github.com/medusalix/multispeaker/network"
 )
 
-var mutex sync.Mutex
-var prompt string
+// Prompt specifies the prefix before each prompt
+var Prompt string
 
+var mutex sync.Mutex
 var commands = map[string]func(*network.Server, ...string){
 	"help": help,
 	"list": listUsers,
@@ -39,32 +40,27 @@ var commands = map[string]func(*network.Server, ...string){
 	"vol":  changeVolume,
 }
 
+// Writeln writes to standard output with a newline
 func Writeln(params ...interface{}) {
 	mutex.Lock()
 	fmt.Print("\r")
 	fmt.Println(params...)
-	fmt.Print(prompt)
+	fmt.Print(Prompt)
 	mutex.Unlock()
 }
 
+// Writef formats the parameters and writes to standard output
 func Writef(format string, params ...interface{}) {
-	mutex.Lock()
-	fmt.Print("\r")
-	fmt.Printf(format, params...)
-	fmt.Print(prompt)
-	mutex.Unlock()
+	Writeln(fmt.Sprintf(format, params...))
 }
 
-func SetPrompt(newPrompt string) {
-	prompt = newPrompt
-}
-
+// HandleCommands reads from standard input and handles the commands
 func HandleCommands(server *network.Server) {
 	reader := bufio.NewReader(os.Stdin)
 
 	for {
 		mutex.Lock()
-		fmt.Print("\r" + prompt)
+		fmt.Print("\r" + Prompt)
 		mutex.Unlock()
 
 		input, err := reader.ReadString('\n')
@@ -125,27 +121,19 @@ func playMusic(server *network.Server, args ...string) {
 		return
 	}
 
-	err := server.PlayMusic(args[0])
-
-	if err != nil {
+	if err := server.PlayMusic(args[0]); err != nil {
 		Writeln("Error starting music playback:", err)
-
-		return
+	} else {
+		Writeln("Started music playback")
 	}
-
-	Writeln("Started music playback")
 }
 
 func stopMusic(server *network.Server, args ...string) {
-	err := server.StopMusic()
-
-	if err != nil {
+	if err := server.StopMusic(); err != nil {
 		Writeln("Error stopping music playback:", err)
-
-		return
+	} else {
+		Writeln("Stopped music playback")
 	}
-
-	Writeln("Stopped music playback")
 }
 
 func changeVolume(server *network.Server, args ...string) {
@@ -160,12 +148,14 @@ func changeVolume(server *network.Server, args ...string) {
 
 	if err != nil {
 		Writeln("Invalid volume:", err)
-	}
-
-	if user == "all" {
-		server.SetVolume("", true, volume)
+	} else if volume < 0 {
+		Writeln("Volume can't be smaller than 0")
+	} else if volume > 100 {
+		Writeln("Volume can't be greater than 100")
+	} else if err := server.SetVolume(user, volume); err != nil {
+		Writeln("Error setting volume:", err)
 	} else {
-		server.SetVolume(user, false, volume)
+		Writef("Set volume of user '%s' to '%d'", user, volume)
 	}
 }
 

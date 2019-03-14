@@ -53,19 +53,18 @@ func main() {
 		cli.HideConsole(false)
 	}
 
-	cli.Writeln("multispeaker v1.0.2 ©Severin v. W.")
+	cli.Writeln("multispeaker v1.0.3 ©Severin v. W.")
 	cli.Writeln()
 
 	controlAddr := &net.TCPAddr{Port: *controlPort}
 	streamAddr := &net.TCPAddr{Port: *streamPort}
 
 	if *server {
-		cli.SetPrompt("> ")
+		cli.Prompt = "> "
 
 		server := network.NewServer(controlAddr, streamAddr)
-		err := server.Run()
 
-		if err != nil {
+		if err := server.Start(); err != nil {
 			cli.Writeln("Error starting server:", err)
 
 			return
@@ -85,9 +84,8 @@ func main() {
 		streamAddr.IP = addr.IP
 
 		client := network.NewClient(controlAddr, streamAddr)
-		err = client.Run()
 
-		if err != nil {
+		if err := client.Start(); err != nil {
 			cli.Writeln("Error starting client:", err)
 
 			return

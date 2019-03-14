@@ -22,32 +22,50 @@ import (
 
 const playerBufferSize = 8192
 
+// Player is used to play music from samples
 type Player struct {
-	pcmPlayer *oto.Player
+	context *oto.Context
+	player  *oto.Player
 }
 
+// NewPlayer constructs a new music player
 func NewPlayer() *Player {
 	return &Player{}
 }
 
+// Prepare sets the sample rate of the player
 func (p *Player) Prepare(sampleRate int) error {
 	var err error
 
-	// Player with 16 bit PCM, 2 channels
-	p.pcmPlayer, err = oto.NewPlayer(sampleRate, 2, 2, playerBufferSize)
+	// Context with 16 bit PCM, 2 channels
+	p.context, err = oto.NewContext(sampleRate, 2, 2, playerBufferSize)
 
-	return err
+	if err != nil {
+		return err
+	}
+
+	p.player = p.context.NewPlayer()
+
+	return nil
 }
 
-func (p *Player) Write(samples []byte) {
-	if p.pcmPlayer != nil {
-		p.pcmPlayer.Write(samples)
+// Write writes the given samples to the player
+func (p *Player) Write(samples []byte) (int, error) {
+	if p.player == nil {
+		return 0, nil
 	}
+
+	return p.player.Write(samples)
 }
 
-func (p *Player) Stop() {
-	if p.pcmPlayer != nil {
-		p.pcmPlayer.Close()
-		p.pcmPlayer = nil
+// Close closes the player
+func (p *Player) Close() error {
+	if p.player == nil {
+		return nil
 	}
+
+	// Ignore errors, close context anyways
+	p.player.Close()
+
+	return p.context.Close()
 }

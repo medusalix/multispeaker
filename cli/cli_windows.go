@@ -17,16 +17,12 @@
 package cli
 
 import (
-	"runtime"
 	"syscall"
 	"unsafe"
 )
 
+// HideConsole hides the console window using the Windows API
 func HideConsole(showMessage bool) {
-	if runtime.GOOS != "windows" {
-		return
-	}
-
 	kernel := syscall.NewLazyDLL("kernel32.dll")
 	user := syscall.NewLazyDLL("user32.dll")
 

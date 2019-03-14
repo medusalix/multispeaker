@@ -21,24 +21,21 @@ import (
 	"os"
 
 	mp3 "github.com/hajimehoshi/go-mp3"
-	"github.com/medusalix/multispeaker/log"
 )
 
 const musicBufferSize = 512
 
+// Music is used to read samples from a music file
 type Music struct {
-	Samples chan []byte
 	decoder *mp3.Decoder
-	stop    chan bool
 }
 
+// NewMusic constructs a new music reader
 func NewMusic() *Music {
-	return &Music{
-		Samples: make(chan []byte),
-		stop:    make(chan bool),
-	}
+	return &Music{}
 }
 
+// Load loads a music file from a given path
 func (m *Music) Load(filePath string) (int, error) {
 	file, err := os.Open(filePath)
 
@@ -55,49 +52,31 @@ func (m *Music) Load(filePath string) (int, error) {
 	return m.decoder.SampleRate(), nil
 }
 
-func (m *Music) IsLoaded() bool {
-	return m.decoder != nil
-}
+// Read reads samples from the music file
+func (m *Music) Read() ([]byte, error) {
+	// Samples are 16 bit, 2 channels
+	samples := make([]byte, musicBufferSize)
+	frame := make([]byte, 4)
 
-func (m *Music) Play() {
-	go m.readSamples()
-}
+	for i := 0; i < len(samples); i += 4 {
+		n, err := m.decoder.Read(frame)
 
-func (m *Music) Stop() {
-	m.stop <- true
-}
-
-func (m *Music) readSamples() {
-	for {
-		select {
-		case <-m.stop:
-			m.decoder.Close()
-			m.decoder = nil
-
-			return
-		default:
-			// Samples are 16 bit, 2 channels
-			samples := make([]byte, musicBufferSize)
-			frame := make([]byte, 4)
-
-			for i := 0; i < len(samples); i += 4 {
-				n, err := m.decoder.Read(frame)
-
-				if err != nil {
-					if err == io.EOF {
-						m.decoder.Close()
-						m.decoder = nil
-
-						return
-					} else {
-						log.Error("Error reading music: ", err)
-					}
-				}
-
-				copy(samples[i:], frame[:n])
+		if err != nil {
+			// Music reached the end
+			if err == io.EOF {
+				return samples[:i], nil
 			}
 
-			m.Samples <- samples
+			return nil, err
 		}
+
+		copy(samples[i:], frame[:n])
 	}
+
+	return samples, nil
+}
+
+// Close closes the music
+func (m *Music) Close() error {
+	return m.decoder.Close()
 }

@@ -17,30 +17,27 @@
 package network
 
 import (
-	"errors"
 	"net"
 
 	"github.com/medusalix/multispeaker/log"
 )
 
-type Endpoint struct {
-	Ip         net.IP
-	Name       string
-	control    *Protocol
-	stream     *Protocol
-	sampleRate int
-	samples    chan []byte
-	disconnect chan *Endpoint
-	close      chan bool
+type endpoint struct {
+	ip            net.IP
+	name          string
+	statusChanged statusCallback
+	control       *protocol
+	stream        *protocol
+	samples       chan []byte
 }
 
-func NewEndpoint(conn net.Conn, disconnect chan *Endpoint) *Endpoint {
-	endpoint := &Endpoint{
-		Ip:         conn.RemoteAddr().(*net.TCPAddr).IP,
-		control:    NewProtocol(conn),
-		samples:    make(chan []byte),
-		disconnect: disconnect,
-		close:      make(chan bool),
+type statusCallback func(endpoint *endpoint, connected bool)
+
+func newEndpoint(conn net.Conn, statusChanged statusCallback) *endpoint {
+	endpoint := &endpoint{
+		ip:            conn.RemoteAddr().(*net.TCPAddr).IP,
+		control:       newProtocol(conn),
+		statusChanged: statusChanged,
 	}
 
 	go endpoint.listen()
@@ -48,84 +45,67 @@ func NewEndpoint(conn net.Conn, disconnect chan *Endpoint) *Endpoint {
 	return endpoint
 }
 
-func (e *Endpoint) EnableStreaming(streamConn net.Conn) bool {
+func (e *endpoint) connectStream(conn net.Conn) {
+	e.stream = newProtocol(conn)
+	e.samples = make(chan []byte)
+}
+
+func (e *endpoint) disconnectStream() error {
 	if e.stream == nil {
-		e.stream = NewProtocol(streamConn)
-
-		go e.sendStream()
-
-		return true
+		return nil
 	}
 
-	return false
+	err := e.stream.close()
+	e.stream = nil
+
+	return err
 }
 
-func (e *Endpoint) PreparePlayback(sampleRate int) error {
-	if sampleRate < 0 {
-		return errors.New("sample rate should be >= 0")
-	} else if sampleRate > 48000 {
-		return errors.New("sample rate should be <= 48000")
+func (e *endpoint) streamSamples(samples []byte) error {
+	if e.stream == nil {
+		return nil
 	}
 
-	return e.control.Send(&PreparePacket{
-		SampleRate: uint16(sampleRate),
+	_, err := e.stream.sendRaw(samples)
+
+	if err != nil {
+		e.stream = nil
+	}
+
+	return err
+}
+
+func (e *endpoint) preparePlayback(sampleRate int) error {
+	return e.control.send(&preparePacket{
+		sampleRate: sampleRate,
 	})
 }
 
-func (e *Endpoint) ChangeVolume(volume int) error {
-	if volume < 0 {
-		return errors.New("volume should be >= 0")
-	} else if volume > 100 {
-		return errors.New("volume should be <= 100")
-	}
-
-	return e.control.Send(&ControlPacket{
-		Volume: uint8(volume),
+func (e *endpoint) changeVolume(volume int) error {
+	return e.control.send(&volumePacket{
+		volume: volume,
 	})
 }
 
-func (e *Endpoint) StreamSamples(samples []byte) error {
-	if e.stream != nil {
-		e.samples <- samples
-	}
-
-	return nil
-}
-
-func (e *Endpoint) listen() {
+func (e *endpoint) listen() {
 	for {
-		packet, err := e.control.Receive()
+		packet, err := e.control.receive()
 
 		if err != nil {
+			if err := e.disconnectStream(); err != nil {
+				log.Error("Error disconnecting stream: ", err)
+			}
+
 			// Notify server of disconnect
-			e.disconnect <- e
-
-			// Close stream connection
-			e.stream = nil
-			e.close <- true
-
-			log.Infof("Endpoint '%s' disconnected", e.Name)
+			e.statusChanged(e, false)
 
 			return
 		}
 
 		switch p := packet.(type) {
-		case *AnnouncePacket:
-			e.Name = string(p.Name)
-
-			log.Infof("Endpoint '%s' connected", e.Name)
-		}
-	}
-}
-
-func (e *Endpoint) sendStream() {
-	for {
-		select {
-		case <-e.close:
-			return
-		case samples := <-e.samples:
-			// Ignore error, we exit manually
-			e.stream.SendRaw(samples)
+		case *announcePacket:
+			e.name = p.name
+			e.statusChanged(e, true)
 		}
 	}
 }

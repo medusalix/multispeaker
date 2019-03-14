@@ -17,12 +17,11 @@
 package network
 
 import (
-	"io"
+	"errors"
 	"net"
 	"os/user"
 	"runtime"
 	"strings"
-	"sync"
 	"time"
 
 	volume "github.com/itchyny/volume-go"
@@ -30,17 +29,18 @@ import (
 	"github.com/medusalix/multispeaker/log"
 )
 
-const reconnectDelay = time.Second * 2
+const reconnectDelay = time.Second * 5
 
+// Client is used to connect to the server and stream music
 type Client struct {
 	controlAddr *net.TCPAddr
 	streamAddr  *net.TCPAddr
-	control     *Protocol
-	stream      *Protocol
+	control     *protocol
+	stream      *protocol
 	player      *audio.Player
-	exit        bool
 }
 
+// NewClient constructs a new client
 func NewClient(controlAddr *net.TCPAddr, streamAddr *net.TCPAddr) *Client {
 	return &Client{
 		controlAddr: controlAddr,
@@ -49,124 +49,71 @@ func NewClient(controlAddr *net.TCPAddr, streamAddr *net.TCPAddr) *Client {
 	}
 }
 
-func (c *Client) Run() error {
-	var group sync.WaitGroup
-
+// Start starts the client
+func (c *Client) Start() error {
 	for {
-		log.Info("Reconnecting...")
-
-		c.reconnect()
-
-		group.Add(2)
-		go c.listenControl(&group)
-		go c.listenStream(&group)
-
-		err := c.announce()
-
-		if err != nil {
-			return err
+		if err := c.run(); err != nil {
+			log.Error("Connection error: ", err)
 		}
 
-		log.Info("Ready to play")
-
-		group.Wait()
-
-		log.Error("Connection to server lost")
-
-		if c.exit {
-			log.Info("Exiting...")
-
-			break
-		}
-
+		log.Info("Reconnecting")
 		time.Sleep(reconnectDelay)
 	}
-
-	return nil
 }
 
-func (c *Client) reconnect() {
-	for {
-		controlConn, err := net.DialTCP("tcp", nil, c.controlAddr)
-
-		if err != nil {
-			continue
-		}
-
-		streamConn, err := net.DialTCP("tcp", nil, c.streamAddr)
-
-		if err != nil {
-			continue
-		}
-
-		c.control = NewProtocol(controlConn)
-		c.stream = NewProtocol(streamConn)
-
-		return
+func (c *Client) run() error {
+	if err := c.connectControl(); err != nil {
+		return err
 	}
-}
 
-func (c *Client) listenControl(group *sync.WaitGroup) {
-	for {
-		packet, err := c.control.Receive()
+	log.Info("Connected to server")
 
-		if err != nil {
-			// Exit if closed by remote host
-			if err == io.EOF {
-				c.exit = true
-			}
-
-			group.Done()
-
-			return
-		}
-
-		switch p := packet.(type) {
-		case *PreparePacket:
-			err := c.updatePlayer(int(p.SampleRate))
-
-			if err != nil {
-				log.Error("Error handling prepare packet: ", err)
-
-				continue
-			}
-		case *ControlPacket:
-			err := c.updateVolume(int(p.Volume))
-
-			if err != nil {
-				log.Error("Error handling control packet: ", err)
-			}
-		}
+	if err := c.announce(); err != nil {
+		return err
 	}
+
+	c.listen()
+
+	return errors.New("connection lost")
 }
 
-func (c *Client) listenStream(group *sync.WaitGroup) {
-	for {
-		samples, err := c.stream.ReceiveRaw()
-
-		if err != nil {
-			group.Done()
-
-			return
-		}
-
-		c.player.Write(samples)
-	}
-}
-
-func (c *Client) announce() error {
-	username, err := getUsername()
+func (c *Client) connectControl() error {
+	conn, err := net.DialTCP("tcp", nil, c.controlAddr)
 
 	if err != nil {
 		return err
 	}
 
-	return c.control.Send(&AnnouncePacket{
-		Name: []byte(username),
+	c.control = newProtocol(conn)
+
+	return nil
+}
+
+func (c *Client) connectStream() error {
+	conn, err := net.DialTCP("tcp", nil, c.streamAddr)
+
+	if err != nil {
+		return err
+	}
+
+	c.stream = newProtocol(conn)
+
+	return nil
+}
+
+func (c *Client) announce() error {
+	username, err := c.getUsername()
+
+	if err != nil {
+		return err
+	}
+
+	return c.control.send(&announcePacket{
+		name: username,
 	})
 }
 
-func getUsername() (string, error) {
+func (c *Client) getUsername() (string, error) {
 	currentUser, err := user.Current()
 
 	if err != nil {
@@ -184,26 +131,81 @@ func getUsername() (string, error) {
 	return name, nil
 }
 
-func (c *Client) updatePlayer(sampleRate int) error {
-	c.player.Stop()
+func (c *Client) listen() error {
+	for {
+		packet, err := c.control.receive()
 
-	if sampleRate > 0 {
-		log.Info("Preparing player with sample rate ", sampleRate)
+		if err != nil {
+			return err
+		}
 
-		return c.player.Prepare(sampleRate)
+		switch p := packet.(type) {
+		case *preparePacket:
+			if err := c.preparePlayer(p.sampleRate); err != nil {
+				log.Error("Error handling prepare packet: ", err)
+			}
+		case *volumePacket:
+			if err := c.changeVolume(p.volume); err != nil {
+				log.Error("Error handling volume packet: ", err)
+			}
+		}
+	}
+}
+
+func (c *Client) preparePlayer(sampleRate int) error {
+	if err := c.player.Close(); err != nil {
+		// Only log error, happens sometimes
+		log.Error("Error closing player: ", err)
 	}
 
-	log.Info("Stopping player")
+	if sampleRate == 0 {
+		return nil
+	}
+
+	log.Debug("Preparing player")
+
+	if err := c.player.Prepare(sampleRate); err != nil {
+		return err
+	}
+
+	log.Debug("Connecting stream")
+
+	if err := c.connectStream(); err != nil {
+		return err
+	}
+
+	log.Info("Starting music playback")
+
+	go c.streamMusic()
 
 	return nil
 }
 
-func (c *Client) updateVolume(vol int) error {
-	// Checking volume.GetMuted leads to a crash
-	// So we ignore errors due to not being muted
+func (c *Client) streamMusic() {
+	for {
+		samples, err := c.stream.receiveRaw()
+
+		if err != nil {
+			log.Info("Stream disconnected by server")
+
+			break
+		}
+
+		_, err = c.player.Write(samples)
+
+		if err != nil {
+			log.Info("Music playback stopped")
+
+			break
+		}
+	}
+}
+
+func (c *Client) changeVolume(vol int) error {
+	// Throws error when already unmuted
 	volume.Unmute()
 
-	log.Info("Setting volume to ", vol)
+	log.Infof("Setting volume to '%d'", vol)
 
 	return volume.SetVolume(vol)
 }
