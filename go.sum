@@ -1,5 +1,5 @@
-github.com/go-ole/go-ole v1.2.2 h1:HXmymm3IQ8iAfpqlbbUGLHd+SZrnmI4y1pv+WL/3R7c=
-github.com/go-ole/go-ole v1.2.2/go.mod h1:7FAglXiTm7HKlQRDeOQ6ZNUHidzCWXuZWq/1dTyBNF8=
+github.com/go-ole/go-ole v1.2.4 h1:nNBDSCOigTSiarFpYE9J/KtEA1IOW4CNeqT9TQDqCxI=
+github.com/go-ole/go-ole v1.2.4/go.mod h1:XCwSNxSkXRo4vlyPy93sltvi/qJq0jqQhjqQNIwKuxM=
 github.com/gopherjs/gopherjs v0.0.0-20180628210949-0892b62f0d9f/go.mod h1:wJfORRmW1u3UXTncJ5qlYoELFm8eSnnEO6hX4iZ3EWY=
 github.com/gopherjs/gopherjs v0.0.0-20180825215210-0210a2f0f73c/go.mod h1:wJfORRmW1u3UXTncJ5qlYoELFm8eSnnEO6hX4iZ3EWY=
 github.com/gopherjs/gopherwasm v0.1.1/go.mod h1:kx4n9a+MzHH0BJJhvlsQ65hqLFXDO/m256AsaDPQ+/4=
@@ -7,16 +7,8 @@ github.com/gopherjs/gopherwasm v1.0.0/go.mod h1:SkZ8z7CWBz5VXbhJel8TxCmAcsQqzgWG
 github.com/hajimehoshi/go-mp3 v0.1.1 h1:Y33fAdTma70fkrxnc9u50Uq0lV6eZ+bkAlssdMmCwUc=
 github.com/hajimehoshi/go-mp3 v0.1.1/go.mod h1:4i+c5pDNKDrxl1iu9iG90/+fhP37lio6gNhjCx9WBJw=
 github.com/hajimehoshi/oto v0.1.1/go.mod h1:hUiLWeBQnbDu4pZsAhOnGqMI1ZGibS6e2qhQdfpwz04=
-github.com/hajimehoshi/oto v0.2.2 h1:zxgxTpUtl5iXIG/i6mTPqq9nSDeqKORh+04bDY3IeBY=
-github.com/hajimehoshi/oto v0.2.2/go.mod h1:e9eTLBB9iZto045HLbzfHJIc+jP3xaKrjZTghvb6fdM=
-github.com/hajimehoshi/oto v0.3.0 h1:HX+K+raGB8L1b3UQAlUlYrHa2dj3jTHvahca5JGy10c=
-github.com/hajimehoshi/oto v0.3.0/go.mod h1:e9eTLBB9iZto045HLbzfHJIc+jP3xaKrjZTghvb6fdM=
-github.com/hajimehoshi/oto v0.3.1-0.20190216104910-8da031ef6ffe h1:xautT0rjRJ1/N6h2Cs6AqvZJk6vFijxHPwNiyPG8Lg0=
-github.com/hajimehoshi/oto v0.3.1-0.20190216104910-8da031ef6ffe/go.mod h1:e9eTLBB9iZto045HLbzfHJIc+jP3xaKrjZTghvb6fdM=
 github.com/hajimehoshi/oto v0.3.1 h1:cpf/uIv4Q0oc5uf9loQn7PIehv+mZerh+0KKma6gzMk=
 github.com/hajimehoshi/oto v0.3.1/go.mod h1:e9eTLBB9iZto045HLbzfHJIc+jP3xaKrjZTghvb6fdM=
-github.com/itchyny/volume-go v0.0.0 h1:W5VNZZ8Ouvf1uD5eo53LH8ZfnvKvnwDt0Dcj02i4a7I=
-github.com/itchyny/volume-go v0.0.0/go.mod h1:xkUTLgHTs4ZDlXPfh1rGHFQr3LQUfaGe2yQ070CFPlo=
 github.com/itchyny/volume-go v0.0.1-0.20181225084746-cfcacecfa11c h1:BfHv6kbMl692XTyrJZoiO+lx4x+KIXtH98sPOBGN/Ns=
 github.com/itchyny/volume-go v0.0.1-0.20181225084746-cfcacecfa11c/go.mod h1:xkUTLgHTs4ZDlXPfh1rGHFQr3LQUfaGe2yQ070CFPlo=
 github.com/moutend/go-wca v0.1.1 h1:XTuNIhTOxRrdOQnCufXdTAp2+Nh3vtE7upKksC31sS4=
