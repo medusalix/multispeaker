@@ -33,7 +33,7 @@ When launched, multispeaker can be interactively controlled through a number of 
 You can download multispeaker via the following command:
 
 ```
-go get github.com/Medusalix/multispeaker
+go get github.com/medusalix/multispeaker
 ```
 
 You can create an executable by using `go build`.
