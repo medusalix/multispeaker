@@ -36,7 +36,7 @@ You can download multispeaker via the following command:
 go get github.com/medusalix/multispeaker
 ```
 
-You can create an executable by using `go build`.
+You can create an executable using the included [build scripts](scripts) (*Windows only*) or manually by running `go build`.
 If you want to set a default address for the client, you can use the `-X` linker flag:
 
 ```
