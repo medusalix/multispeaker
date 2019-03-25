@@ -32,7 +32,7 @@ import (
 var Prompt string
 
 var mutex sync.Mutex
-var commands = map[string]func(*network.Server, ...string){
+var commands = map[string]func(server *network.Server, args []string){
 	"help": help,
 	"list": listUsers,
 	"play": playMusic,
@@ -92,11 +92,11 @@ func HandleCommands(server *network.Server) {
 			continue
 		}
 
-		command(server, args...)
+		command(server, args)
 	}
 }
 
-func help(server *network.Server, args ...string) {
+func help(server *network.Server, args []string) {
 	Writeln(
 		"Commands:\n\n" +
 			"list: Prints a list of all currently connected users.\n" +
@@ -108,13 +108,13 @@ func help(server *network.Server, args ...string) {
 	)
 }
 
-func listUsers(server *network.Server, args ...string) {
+func listUsers(server *network.Server, args []string) {
 	for _, user := range server.GetConnectedUsers() {
 		Writeln(user)
 	}
 }
 
-func playMusic(server *network.Server, args ...string) {
+func playMusic(server *network.Server, args []string) {
 	if len(args) < 1 {
 		Writeln("Args: <file>")
 
@@ -128,7 +128,7 @@ func playMusic(server *network.Server, args ...string) {
 	}
 }
 
-func stopMusic(server *network.Server, args ...string) {
+func stopMusic(server *network.Server, args []string) {
 	if err := server.StopMusic(); err != nil {
 		Writeln("Error stopping music playback:", err)
 	} else {
@@ -136,7 +136,7 @@ func stopMusic(server *network.Server, args ...string) {
 	}
 }
 
-func changeVolume(server *network.Server, args ...string) {
+func changeVolume(server *network.Server, args []string) {
 	if len(args) < 2 {
 		Writeln("Args: <user|all> <volume>")
 
